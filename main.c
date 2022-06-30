@@ -92,7 +92,7 @@ int main(void) {
     SYS_Initialize();
 
     /*Initialize Timer*/
-    //TIMER_SetConfiguration(TIMER_CONFIGURATION_RTCC);
+    TIMER_SetConfiguration(TIMER_CONFIGURATION_RTCC);
     
     /* Initialize UART*/
     //UART_Initialize();
