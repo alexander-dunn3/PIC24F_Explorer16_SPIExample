@@ -7,6 +7,7 @@
 
 #include <xc.h>
 #include <spi.h>
+#include <string.h>
 
 #define SS_TRIS     TRISAbits.TRISA0
 #define SS_LAT      LATAbits.LATA0
@@ -14,7 +15,9 @@
 #define INPUT  1
 #define OUTPUT 0
 
-bool tx_complete = false;
+bool word_tx_complete = false;
+char *messages[7];
+int messageIndex = 0;
 
 /*********************************************************************
 * Function: SPI_Initialize(void);
@@ -30,6 +33,14 @@ bool tx_complete = false;
 ********************************************************************/
 void SPI_Initialize(void)
 {
+    messages[0] = "Congratulations";
+    messages[1] = "you";
+    messages[2] = "have";
+    messages[3] = "successfully";
+    messages[4] = "decoded";
+    messages[5] = "the";
+    messages[6] = "message";
+    
     TRISFbits.TRISF8 = 0; // RF8 as output (SDO1)
     TRISBbits.TRISB1 = 0; // RB1 as output (SCK1OUT)
     SS_TRIS = 0; // RA2 as output (SS)
@@ -77,22 +88,21 @@ void SPI_Initialize(void)
 void SPI_Transmit(void)
 {
     int i = 0;
+    int strLength = strlen(messages[messageIndex]);
+    char *ptr = messages[messageIndex];
     
     // drop SS (active)
     SS_LAT = 0;
-    
-    // output message
-    char message[15] = "congratulations";
-    
-    for (; i < 15; i++)
+       
+    for (; i < strLength; i++)
     {
-        SPI1BUF = message[i];
+        SPI1BUF = *ptr++;
         
         while(SPI1STATbits.SPITBF) {} // wait for SPIx Transmit Buffer Full Status bit to enter 
                                       // 'Transmit started, SPIxTXB is empty' state
     }
     
-    tx_complete = true;
+    word_tx_complete = true;
 }
 
 int counter = 0;
@@ -102,13 +112,16 @@ int counter = 0;
  */
 void __attribute__ ( ( __interrupt__ , auto_psv ) ) _SPI1Interrupt(void)
 {    
-    if(tx_complete)
+    if(word_tx_complete)
     {
         SS_LAT = 1;
-        tx_complete = false;
+        word_tx_complete = false;
+        messageIndex++;
+        
+        if(messageIndex > 6)
+            messageIndex = 0;
     }
 
-    
     IFS0bits.SPI1IF = 0; // Clear the SPIxIF bit in the respective IFS register   
-    SPI1STATbits.SPIROV = 0; // Clear the SPIROV bit (SPIxSTAT<6>)
+    SPI1STATbits.SPIROV = 0; // Clear the SPIROV bit (SPIxSTAT<6>) - not doing this seems to cause an issue after two writes to the register
 }
