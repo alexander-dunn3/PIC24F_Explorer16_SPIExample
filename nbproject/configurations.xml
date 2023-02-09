@@ -11,7 +11,6 @@
           <logicalFolder name="pic24fj256gb110_pim"
                          displayName="pic24fj256gb110_pim"
                          projectFiles="true">
-            <itemPath>bsp/exp16/pic24fj256gb110_pim/adc.h</itemPath>
             <itemPath>bsp/exp16/pic24fj256gb110_pim/buttons.h</itemPath>
             <itemPath>bsp/exp16/pic24fj256gb110_pim/lcd.h</itemPath>
             <itemPath>bsp/exp16/pic24fj256gb110_pim/leds.h</itemPath>
@@ -33,7 +32,6 @@
                    projectFiles="true">
       <logicalFolder name="f1" displayName="system_config" projectFiles="true">
         <logicalFolder name="f19" displayName="pic24fj256gb110_pim" projectFiles="true">
-          <itemPath>bsp/exp16/pic24fj256gb110_pim/adc.c</itemPath>
           <itemPath>bsp/exp16/pic24fj256gb110_pim/buttons.c</itemPath>
           <itemPath>bsp/exp16/pic24fj256gb110_pim/lcd.c</itemPath>
           <itemPath>bsp/exp16/pic24fj256gb110_pim/leds.c</itemPath>
@@ -472,34 +470,6 @@
         <property key="tracecontrol.tracefilemax" value="10000000"/>
         <property key="voltagevalue" value="3.25"/>
       </Tool>
-      <item path="bsp/exp16/pic24fj256gb110_pim/adc.c" ex="false" overriding="false">
-        <C30>
-        </C30>
-        <C30-AR>
-        </C30-AR>
-        <C30-AS>
-        </C30-AS>
-        <C30-CO>
-        </C30-CO>
-        <C30-LD>
-        </C30-LD>
-        <C30Global>
-        </C30Global>
-      </item>
-      <item path="bsp/exp16/pic24fj256gb110_pim/adc.h" ex="false" overriding="false">
-        <C30>
-        </C30>
-        <C30-AR>
-        </C30-AR>
-        <C30-AS>
-        </C30-AS>
-        <C30-CO>
-        </C30-CO>
-        <C30-LD>
-        </C30-LD>
-        <C30Global>
-        </C30Global>
-      </item>
       <item path="bsp/exp16/pic24fj256gb110_pim/buttons.c"
             ex="false"
             overriding="false">
