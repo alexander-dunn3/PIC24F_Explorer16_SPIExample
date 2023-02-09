@@ -179,51 +179,6 @@ void SOSC_Configuration(void) {
 /*******************************************************************************
 
   Function:
-   void __attribute__((__interrupt__)) _ADC1Interrupt( void ))
-
-  Summary:
-    ISR routine for the ADC1 Interrupt.
-
-  Description:
-    This is the raw Interrupt Service Routine (ISR) for the ADC 1 interrupt.
-    This routine calls the ADC's interrupt routine to service the
-    interrupt.
-
-  Precondition:
-    The ADC peripheral must have been initialized for ADC 1.
-
-  Parameters:
-    None.
-
-  Returns:
-    None.
-
-  Remarks:
-    This routine must not be "called" as a C-language function is called.  It
-    is "vectored" to by the processor when the interrupt occurs.
- */
-
-void __attribute__((__interrupt__, auto_psv)) _ADC1Interrupt(void) {
-    static int count = 0;
-
-    /* Simple "I am here" indicator */
-    if (count++ == 2000) {
-        LED_Toggle(LED_D9);
-        count = 0;
-    }
-
-    /* Save the Potentiometer data */
-    appData.temp1 = ADC1BUF0;
-
-    /* set flag to update LCD */
-    appData.adc_lcd_update = 1;
-
-    /* reset ADC interrupt flag */
-    IFS0bits.AD1IF = 0;
-}
-
-/*******************************************************************************
-  Function:
    void __attribute__((__interrupt__)) _T1Interrupt( void ))
 
   Summary:
