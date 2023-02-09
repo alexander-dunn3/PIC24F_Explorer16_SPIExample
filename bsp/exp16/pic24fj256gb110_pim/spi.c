@@ -41,16 +41,16 @@ void SPI_Initialize(void)
     messages[5] = "the";
     messages[6] = "message";
     
-    TRISFbits.TRISF8 = 0; // RF8 as output (SDO1)
-    TRISBbits.TRISB1 = 0; // RB1 as output (SCK1OUT)
+    TRISFbits.TRISF8 = 0; // RF8 as output (SDO1) pin 53
+    TRISBbits.TRISB1 = 0; // RB1 as output (SCK1OUT) pin 24
     SS_TRIS = 0; // RA2 as output (SS)
     SS_LAT = 1; // set SS idle high
     
     // Unlock Registers
     __builtin_write_OSCCONL(OSCCON & 0xBF);
     
-    RPOR7bits.RP15R = 7; // RP15 -> SDO1 (RF8)
-    RPOR0bits.RP1R = 8; // RP1 -> SCK1OUT (RB1)
+    RPOR7bits.RP15R = 7; // RP15 -> SDO1 (RF8) pin 53
+    RPOR0bits.RP1R = 8; // RP1 -> SCK1OUT (RB1) pin 24
     
     // Lock Registers
     __builtin_write_OSCCONL(OSCCON | 0x40);
