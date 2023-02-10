@@ -48,5 +48,18 @@
 ********************************************************************/
 void UART_Initialize(void);
 
+/*********************************************************************
+* Function: UART_Transmit(void);
+*
+* Overview: Transmits a UART message
+*
+* PreCondition: none
+*
+* Input: none
+*
+* Output: none
+*
+********************************************************************/
+void UART_Transmit(void);
 #endif	/* UART_H */
 

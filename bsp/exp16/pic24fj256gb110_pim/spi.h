@@ -48,6 +48,18 @@
 ********************************************************************/
 void SPI_Initialize(void);
 
+/*********************************************************************
+* Function: SPI_Transmit(void);
+*
+* Overview: Transmits the next SPI message in the internal buffer
+*
+* PreCondition: none
+*
+* Input: none
+*
+* Output: none
+*
+********************************************************************/
 void SPI_Transmit(void);
 
 #endif	/* SPI_H */

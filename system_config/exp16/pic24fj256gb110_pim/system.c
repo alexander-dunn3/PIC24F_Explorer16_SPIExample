@@ -152,7 +152,7 @@ void SYS_Initialize(void) {
     /* Enable Switch S6 - button to the right of S3*/
     BUTTON_Enable(BUTTON_S6);
 
-    /* Configure Secondary Ocillator for Timer 1 to work as RTC counter*/
+    /* Configure Secondary Oscillator for Timer 1 to work as RTC counter*/
     SOSC_Configuration();
 }
 

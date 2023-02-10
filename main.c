@@ -69,13 +69,7 @@ void Respond_To_Button_Presses(void);
 void SYS_Initialize(void);
 
 
-APP_DATA appData = {
-    .messageLine1 = "Explorer 16 Demo",
-    .messageLine2 = "Press S3 to cont",
-    .messageTime = "Time 00: 00: 00 ",
-    .messageADC = " Pot = 0.00 Vdc "
-};
-
+APP_DATA appData;
 bool _previous_button_pressed_state = false;
 
 // *****************************************************************************
@@ -92,10 +86,10 @@ int main(void) {
     TIMER_SetConfiguration(TIMER_CONFIGURATION_RTCC);
     
     /* Initialize UART*/
-    //UART_Initialize();
+    UART_Initialize();
     
     /* Initialise SPI */
-    SPI_Initialize();
+    //SPI_Initialize();
 
     /* Infinite Loop */
     while (1) {
@@ -133,7 +127,9 @@ void Respond_To_Button_Presses(void) {
     
     if(!_previous_button_pressed_state && button_pressed)
     {
-        SPI_Transmit();
+        //SPI_Transmit();
+        
+        UART_Transmit();
     }
     
     _previous_button_pressed_state = button_pressed;

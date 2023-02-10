@@ -85,6 +85,18 @@ void SPI_Initialize(void)
     SPI1STATbits.SPIEN = 1; // Enable SPI operation by setting the SPIEN bit (SPIxSTAT<15>)
 }
 
+/*********************************************************************
+* Function: SPI_Transmit(void);
+*
+* Overview: Transmits the next SPI message in the internal buffer
+*
+* PreCondition: none
+*
+* Input: none
+*
+* Output: none
+*
+********************************************************************/
 void SPI_Transmit(void)
 {
     int i = 0;
@@ -104,8 +116,6 @@ void SPI_Transmit(void)
     
     word_tx_complete = true;
 }
-
-int counter = 0;
 
 /*
  SPI1 transfer completed interrupt
