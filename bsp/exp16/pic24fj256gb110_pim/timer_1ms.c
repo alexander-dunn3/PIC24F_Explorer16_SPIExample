@@ -44,15 +44,24 @@
 #define UART_SIM_TRIS   TRISAbits.TRISA0 // RA0 direction state (input / output)
 #define UART_SIM_LAT    LATAbits.LATA0 // RA0 output state (high / low)
 
+// global variables
+bool service_uart_emulation = false;
+unsigned int data_bits_tx_mode = 0;
 
-char *start;
+// local variables
+bool issue_start_bit = true;
+bool issue_stop_bit = false;
+char *message_start;
 char *message;
-char *message32 = "     32 - bytes, 32 - bytes     ";
-char *message24 = " 24 - bytes, 24 - bytes ";
-char *message16 = "   16 - bytes   ";
-char *message9 = "9 - bytes";
+char *message32 = "32b "; // 4 bytes (32 bits) long
+char *message24 = "24b"; // 3 bytes (24 bits) long
+char *message16 = "16"; // 2 bytes (16 bits) long
+char *message9 = "9"; // 1 byte (9 bits) long - there will need to be some additional bit transmitted for this configuration
 int output_bit = 0;
 int length;
+int stopBitsCount;
+int numberOfStopBits;
+int numberOfDataBits;
 
 /*********************************************************************
  * Function: void TIMER_SetConfiguration(void)
@@ -68,8 +77,12 @@ int length;
  ********************************************************************/
 void TIMER_SetConfiguration(void)
 {
-    length = strlen(message32);
-    start = message32;
+    message = message32;
+    message_start = message;    
+    length = strlen(message);
+    stopBitsCount = 0;
+    numberOfStopBits = 1;
+    
     UART_SIM_TRIS = 0; // RA0 as output (pin 58)
     UART_SIM_LAT = 1; // RA0 set high (pin 58)
     
@@ -88,6 +101,38 @@ void TIMER_SetConfiguration(void)
             TIMER_PRESCALER_1;
 
     IEC0bits.T3IE = 1;
+}
+
+void ToggleDataBits(void)
+{
+    int remainder = ++data_bits_tx_mode % 4;
+    
+    switch(remainder)
+    {
+        case 0:
+        {
+            message = message32;
+            break;
+        }
+        case 1:
+        {
+            message = message24;
+            break;
+        }
+        case 2:
+        {
+            message = message16;
+            break;
+        }
+        case 3:
+        {
+            message = message9;
+            break;
+        }
+    }
+    
+    message_start = message;
+    length = strlen(message);
 }
 
 /****************************************************************************
@@ -111,22 +156,50 @@ void TIMER_SetConfiguration(void)
  ***************************************************************************/
 void __attribute__ ( ( __interrupt__ , auto_psv ) ) _T3Interrupt ( void )
 {
-    bool high = ((*message32 >> output_bit) & 0x01) == 0x01;
-
-    if(high)
-        UART_SIM_LAT = 1;
-    else
-        UART_SIM_LAT = 0;
-    
-    if(++output_bit == 8)
+    if(service_uart_emulation)
     {
-        output_bit = 0; // reset output_bit if required
-        message32++; // increment message pointer
+        if(issue_start_bit)
+        {
+            UART_SIM_LAT = 0;
+            issue_start_bit = false;
+        }
+        else if(issue_stop_bit)
+        {
+            UART_SIM_LAT = 1; 
+            
+            if(++stopBitsCount == numberOfStopBits)
+            {
+                stopBitsCount = 0; // reset stop bits counter
+                issue_stop_bit = false; // don't issue anymore stop bits
+                issue_start_bit = true; // issue start bit on the next message
+                service_uart_emulation = false; // finish transmitting message       
+            }
+        }
+        else
+        {
+            bool high = ((*message >> output_bit) & 0x01) == 0x01;
+
+            if(high)
+                UART_SIM_LAT = 1;
+            else
+                UART_SIM_LAT = 0;
+
+            
+            if(++output_bit == 8)
+            {
+                output_bit = 0; // reset output_bit if required
+                message++; // increment message pointer
+            }
+
+            // reset start of message
+            if(message == (message_start + length))
+            {
+                message = message_start;
+                issue_stop_bit = true; // issue stop bit now we've transmitted all the data bits
+            }
+        }
     }
-    
-    // reset start of message
-    if(message32 == (start + length))
-        message32 = start;
-    
+
+    // clear timer interrupt
     IFS0bits.T3IF = 0;
 }
