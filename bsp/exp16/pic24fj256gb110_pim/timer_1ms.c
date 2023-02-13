@@ -135,6 +135,39 @@ void ToggleDataBits(void)
     length = strlen(message);
 }
 
+/*********************************************************************
+* Function: void ToggleStopBits(void)
+*
+* Overview: Toggle the stop bits transmission mode. Between 0, 1, 2 
+* bits.
+*
+* Input:  None
+*
+* Output: None
+*
+********************************************************************/
+void ToggleStopBits(void)
+{
+    if(++numberOfStopBits % 3 == 0)
+        numberOfStopBits = 0;
+}
+
+/*********************************************************************
+* Function: void ToggleParityBit(void)
+*
+* Overview: Toggle the stop bits transmission mode. Between None, Odd, 
+* Even, Mark and Space.
+*
+* Input:  None
+*
+* Output: None
+*
+********************************************************************/
+void ToggleParityBit(void)
+{
+    // TODO!
+}
+
 /****************************************************************************
   Function:
     void __attribute__((__interrupt__, auto_psv)) _T3Interrupt(void)
