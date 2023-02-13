@@ -82,14 +82,8 @@ int main(void) {
     /* Call the System Initialize routine */
     SYS_Initialize();
 
-    /*Initialize Timer*/
-    TIMER_SetConfiguration(TIMER_CONFIGURATION_RTCC);
-    
-    /* Initialize UART*/
-    UART_Initialize();
-    
-    /* Initialise SPI */
-    //SPI_Initialize();
+    /*Initialize bit bang timer*/
+    TIMER_SetConfiguration();
 
     /* Infinite Loop */
     while (1) {
@@ -127,9 +121,8 @@ void Respond_To_Button_Presses(void) {
     
     if(!_previous_button_pressed_state && button_pressed)
     {
-        //SPI_Transmit();
+        // do some task on button press
         
-        UART_Transmit();
     }
     
     _previous_button_pressed_state = button_pressed;

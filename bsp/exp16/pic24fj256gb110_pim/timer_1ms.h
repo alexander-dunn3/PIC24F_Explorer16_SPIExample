@@ -33,44 +33,8 @@
 /* Type Definitions ***********************************************/
 typedef void (*TICK_HANDLER)(void);
 
-typedef enum
-{
-    TIMER_CONFIGURATION_1MS,
-    TIMER_CONFIGURATION_RTCC,
-    TIMER_CONFIGURATION_OFF
-} TIMER_CONFIGURATIONS;
-
 /*********************************************************************
-* Function: void TIMER_CancelTick(TICK_HANDLER handle)
-*
-* Overview: Cancels a tick request.
-*
-* PreCondition: None
-*
-* Input:  handle - the function that was handling the tick request
-*
-* Output: None
-*
-********************************************************************/
-void TIMER_CancelTick(TICK_HANDLER handle);
-
-/*********************************************************************
-* Function: bool TIMER_RequestTick(TICK_HANDLER handle, uint32_t rate)
-*
-* Overview: Requests to receive a periodic event.
-*
-* PreCondition: None
-*
-* Input:  handle - the function that will be called when the time event occurs
-*         rate - the number of ticks per event.
-*
-* Output: bool - true if successful, false if unsuccessful
-*
-********************************************************************/
-bool TIMER_RequestTick(TICK_HANDLER handle, uint32_t rate);
-
-/*********************************************************************
-* Function: bool TIMER_SetConfiguration(TIMER_CONFIGURATIONS configuration)
+* Function: void TIMER_SetConfiguration(void)
 *
 * Overview: Initializes the timer.
 *
@@ -78,9 +42,9 @@ bool TIMER_RequestTick(TICK_HANDLER handle, uint32_t rate);
 *
 * Input:  None
 *
-* Output: bool - true if successful, false if unsuccessful
+* Output: None
 *
 ********************************************************************/
-bool TIMER_SetConfiguration(TIMER_CONFIGURATIONS configuration);
+void TIMER_SetConfiguration(void);
 
 #endif //TIMER_1MS

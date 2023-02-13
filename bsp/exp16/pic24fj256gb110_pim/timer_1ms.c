@@ -26,11 +26,6 @@
 #include <string.h>
 #include <timer_1ms.h>
 
-/* Compiler checks and configuration *******************************/
-#ifndef TIMER_MAX_1MS_CLIENTS
-    #define TIMER_MAX_1MS_CLIENTS 1
-#endif
-
 /* Definitions *****************************************************/
 #define STOP_TIMER_IN_IDLE_MODE     0x2000
 #define TIMER_SOURCE_INTERNAL       0x0000
@@ -46,73 +41,21 @@
 #define TIMER_INTERRUPT_PRIORITY    0x0001
 #define TIMER_INTERRUPT_PRIORITY_4  0x0004
 
-/* Type Definitions ************************************************/
-typedef struct
-{
-    TICK_HANDLER handle;
-    uint32_t rate;
-    uint32_t count;
-} TICK_REQUEST;
+#define UART_SIM_TRIS   TRISAbits.TRISA0 // RA0 direction state (input / output)
+#define UART_SIM_LAT    LATAbits.LATA0 // RA0 output state (high / low)
 
-/* Variables *******************************************************/
-TICK_REQUEST requests[TIMER_MAX_1MS_CLIENTS] ;
+
+char *start;
+char *message;
+char *message32 = "     32 - bytes, 32 - bytes     ";
+char *message24 = " 24 - bytes, 24 - bytes ";
+char *message16 = "   16 - bytes   ";
+char *message9 = "9 - bytes";
+int output_bit = 0;
+int length;
+
 /*********************************************************************
- * Function: void TIMER_CancelTick(TICK_HANDLER handle)
- *
- * Overview: Cancels a tick request.
- *
- * PreCondition: None
- *
- * Input:  handle - the function that was handling the tick request
- *
- * Output: None
- *
- ********************************************************************/
-void TIMER_CancelTick ( TICK_HANDLER handle )
-{
-    uint8_t i ;
-
-    for (i = 0 ; i < TIMER_MAX_1MS_CLIENTS ; i++)
-    {
-        if (requests[i].handle == handle)
-        {
-            requests[i].handle = NULL ;
-        }
-    }
-}
-/*********************************************************************
- * Function: bool TIMER_RequestTick(TICK_HANDLER handle, uint32_t rate)
- *
- * Overview: Requests to receive a periodic event.
- *
- * PreCondition: None
- *
- * Input:  handle - the function that will be called when the time event occurs
- *         rate - the number of ticks per event.
- *
- * Output: bool - true if successful, false if unsuccessful
- *
- ********************************************************************/
-bool TIMER_RequestTick ( TICK_HANDLER handle , uint32_t rate )
-{
-    uint8_t i ;
-
-    for (i = 0 ; i < TIMER_MAX_1MS_CLIENTS ; i++)
-    {
-        if (requests[i].handle == NULL)
-        {
-            requests[i].handle = handle ;
-            requests[i].rate = rate ;
-            requests[i].count = 0 ;
-
-            return true ;
-        }
-    }
-
-    return false ;
-}
-/*********************************************************************
- * Function: bool TIMER_SetConfiguration(TIMER_CONFIGURATIONS configuration)
+ * Function: void TIMER_SetConfiguration(void)
  *
  * Overview: Initializes the timer.
  *
@@ -120,60 +63,33 @@ bool TIMER_RequestTick ( TICK_HANDLER handle , uint32_t rate )
  *
  * Input:  None
  *
- * Output: bool - true if successful, false if unsuccessful
+ * Output: None
  *
  ********************************************************************/
-bool TIMER_SetConfiguration ( TIMER_CONFIGURATIONS configuration )
+void TIMER_SetConfiguration(void)
 {
-    switch (configuration)
-    {
-        case TIMER_CONFIGURATION_1MS:
-            memset ( requests , 0 , sizeof (requests ) ) ;
+    length = strlen(message32);
+    start = message32;
+    UART_SIM_TRIS = 0; // RA0 as output (pin 58)
+    UART_SIM_LAT = 1; // RA0 set high (pin 58)
+    
+    IPC2bits.T3IP = TIMER_INTERRUPT_PRIORITY;
+    IFS0bits.T3IF = 0;
 
-            IPC2bits.T3IP = TIMER_INTERRUPT_PRIORITY ;
-            IFS0bits.T3IF = 0 ;
+    TMR3 = 0;
 
-            TMR3 = 0 ;
+    PR3 = 416; // 9600 baud (7us - 16.38ms range)
 
-            PR3 = 2000 ;
-            T3CON = TIMER_ON |
-                    STOP_TIMER_IN_IDLE_MODE |
-                    TIMER_SOURCE_INTERNAL |
-                    GATED_TIME_DISABLED |
-                    TIMER_16BIT_MODE |
-                    TIMER_PRESCALER_8 ;
+    T3CON = TIMER_ON |
+            STOP_TIMER_IN_IDLE_MODE |
+            TIMER_SOURCE_INTERNAL |
+            GATED_TIME_DISABLED |
+            TIMER_16BIT_MODE |
+            TIMER_PRESCALER_1;
 
-            IEC0bits.T3IE = 1 ;
-
-            return true ;
-
-        case TIMER_CONFIGURATION_RTCC:
-            memset ( requests , 0 , sizeof (requests ) ) ;
-
-            IPC0bits.T1IP = TIMER_INTERRUPT_PRIORITY_4 ;
-            IFS0bits.T1IF = 0 ;
-
-            TMR1 = 0 ;
-
-            PR1 = 0x8000 ;
-            T1CON = TIMER_ON |
-                    TIMER_SOURCE_EXTERNAL |
-                    GATED_TIME_DISABLED |
-                    TIMER_16BIT_MODE |
-                    TIMER_PRESCALER_1 ;
-
-            IEC0bits.T1IE = 1 ;
-
-            return true ;
-
-
-        case TIMER_CONFIGURATION_OFF:
-            IEC0bits.T3IE = 0 ;
-            return true ;
-    }
-
-    return false ;
+    IEC0bits.T3IE = 1;
 }
+
 /****************************************************************************
   Function:
     void __attribute__((__interrupt__, auto_psv)) _T3Interrupt(void)
@@ -195,21 +111,22 @@ bool TIMER_SetConfiguration ( TIMER_CONFIGURATIONS configuration )
  ***************************************************************************/
 void __attribute__ ( ( __interrupt__ , auto_psv ) ) _T3Interrupt ( void )
 {
-    uint8_t i ;
+    bool high = ((*message32 >> output_bit) & 0x01) == 0x01;
 
-    for (i = 0 ; i < TIMER_MAX_1MS_CLIENTS ; i++)
+    if(high)
+        UART_SIM_LAT = 1;
+    else
+        UART_SIM_LAT = 0;
+    
+    if(++output_bit == 8)
     {
-        if (requests[i].handle != NULL)
-        {
-            requests[i].count++ ;
-
-            if (requests[i].count == requests[i].rate)
-            {
-                requests[i].handle ( ) ;
-                requests[i].count = 0 ;
-            }
-        }
+        output_bit = 0; // reset output_bit if required
+        message32++; // increment message pointer
     }
-
-    IFS0bits.T3IF = 0 ;
+    
+    // reset start of message
+    if(message32 == (start + length))
+        message32 = start;
+    
+    IFS0bits.T3IF = 0;
 }
