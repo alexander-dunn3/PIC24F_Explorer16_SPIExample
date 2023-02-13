@@ -41,9 +41,9 @@ void SPI_Initialize(void)
     messages[5] = "the";
     messages[6] = "message";
     
-    TRISFbits.TRISF8 = 0; // RF8 as output (SDO1) pin 53
-    TRISBbits.TRISB1 = 0; // RB1 as output (SCK1OUT) pin 24
-    SS_TRIS = 0; // RA2 as output (SS)
+    TRISFbits.TRISF8 = OUTPUT; // RF8 as output (SDO1) pin 53
+    TRISBbits.TRISB1 = OUTPUT; // RB1 as output (SCK1OUT) pin 24
+    SS_TRIS = OUTPUT; // RA0 as output (SS)
     SS_LAT = 1; // set SS idle high
     
     // Unlock Registers
@@ -105,7 +105,7 @@ void SPI_Transmit(void)
     
     // drop SS (active)
     SS_LAT = 0;
-       
+    
     for (; i < strLength; i++)
     {
         SPI1BUF = *ptr++;
