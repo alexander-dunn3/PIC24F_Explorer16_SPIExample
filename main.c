@@ -70,7 +70,10 @@ void SYS_Initialize(void);
 
 
 APP_DATA appData;
-bool _previous_button_pressed_state = false;
+bool _previous_button_s6_pressed_state = false;
+bool _previous_button_s3_pressed_state = false;
+bool _previous_button_s5_pressed_state = false;
+bool _previous_button_s4_pressed_state = false;
 
 // *****************************************************************************
 // *****************************************************************************
@@ -78,7 +81,8 @@ bool _previous_button_pressed_state = false;
 // *****************************************************************************
 // *****************************************************************************
 
-int main(void) {
+int main(void) 
+{
     /* Call the System Initialize routine */
     SYS_Initialize();
 
@@ -86,7 +90,8 @@ int main(void) {
     TIMER_SetConfiguration();
 
     /* Infinite Loop */
-    while (1) {
+    while (1) 
+    {
         Respond_To_Button_Presses();
     };
 }
@@ -116,14 +121,38 @@ int main(void) {
  */
 
 /******************************************************************************/
-void Respond_To_Button_Presses(void) {
-    bool button_pressed = BUTTON_IsPressed(BUTTON_S6);
-    
-    if(!_previous_button_pressed_state && button_pressed)
+void Respond_To_Button_Presses(void) 
+{
+    bool button_s6_pressed = BUTTON_IsPressed(BUTTON_S6);
+    if(!_previous_button_s6_pressed_state && button_s6_pressed)
     {
-        // do some task on button press
-        
+        // trigger uart bit bang messaging
+        service_uart_emulation = true;
     }
     
-    _previous_button_pressed_state = button_pressed;
+    bool button_s3_pressed = BUTTON_IsPressed(BUTTON_S3);
+    if(!_previous_button_s3_pressed_state && button_s3_pressed)
+    {
+        // toggle data bits transmission
+        ToggleDataBits();
+    }
+    
+    bool button_s5_pressed = BUTTON_IsPressed(BUTTON_S5);
+    if(!_previous_button_s5_pressed_state && button_s5_pressed)
+    {
+        // toggle data bits transmission
+        ToggleStopBits();
+    }
+    
+    bool button_s4_pressed = BUTTON_IsPressed(BUTTON_S4);
+    if(!_previous_button_s4_pressed_state && button_s4_pressed)
+    {
+        // toggle data bits transmission
+        ToggleParityBit();
+    }
+    
+    _previous_button_s6_pressed_state = button_s6_pressed;
+    _previous_button_s3_pressed_state = button_s3_pressed;
+    _previous_button_s5_pressed_state = button_s5_pressed;    
+    _previous_button_s4_pressed_state = button_s4_pressed;
 }

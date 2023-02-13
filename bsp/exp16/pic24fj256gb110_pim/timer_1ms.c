@@ -44,13 +44,21 @@
 #define UART_SIM_TRIS   TRISAbits.TRISA0 // RA0 direction state (input / output)
 #define UART_SIM_LAT    LATAbits.LATA0 // RA0 output state (high / low)
 
+/** Type definitions *********************************/
+typedef enum
+{
+    IDLE = 0,
+    START,
+    DATA,
+    PARITY,
+    STOP
+} TRANSMIT_STATE;
+
 // global variables
 bool service_uart_emulation = false;
 unsigned int data_bits_tx_mode = 0;
 
 // local variables
-bool issue_start_bit = true;
-bool issue_stop_bit = false;
 char *message_start;
 char *message;
 char *message32 = "32b "; // 4 bytes (32 bits) long
@@ -62,6 +70,8 @@ int length;
 int stopBitsCount;
 int numberOfStopBits;
 int numberOfDataBits;
+int issue_parity_bit = 4;// None, Odd, Even, Mark, Space
+TRANSMIT_STATE transmit_state = IDLE;
 
 /*********************************************************************
  * Function: void TIMER_SetConfiguration(void)
@@ -165,7 +175,8 @@ void ToggleStopBits(void)
 ********************************************************************/
 void ToggleParityBit(void)
 {
-    // TODO!
+    if(++issue_parity_bit % 5 == 0)
+        issue_parity_bit = 0;
 }
 
 /****************************************************************************
@@ -189,26 +200,23 @@ void ToggleParityBit(void)
  ***************************************************************************/
 void __attribute__ ( ( __interrupt__ , auto_psv ) ) _T3Interrupt ( void )
 {
-    if(service_uart_emulation)
+    switch(transmit_state)
     {
-        if(issue_start_bit)
+        case IDLE:
+        {
+            if(service_uart_emulation)
+            {
+                transmit_state = START;
+            }
+            break;
+        }
+        case START:
         {
             UART_SIM_LAT = 0;
-            issue_start_bit = false;
+            transmit_state = DATA;            
+            break;
         }
-        else if(issue_stop_bit)
-        {
-            UART_SIM_LAT = 1; 
-            
-            if(++stopBitsCount == numberOfStopBits)
-            {
-                stopBitsCount = 0; // reset stop bits counter
-                issue_stop_bit = false; // don't issue anymore stop bits
-                issue_start_bit = true; // issue start bit on the next message
-                service_uart_emulation = false; // finish transmitting message       
-            }
-        }
-        else
+        case DATA:
         {
             bool high = ((*message >> output_bit) & 0x01) == 0x01;
 
@@ -228,8 +236,32 @@ void __attribute__ ( ( __interrupt__ , auto_psv ) ) _T3Interrupt ( void )
             if(message == (message_start + length))
             {
                 message = message_start;
-                issue_stop_bit = true; // issue stop bit now we've transmitted all the data bits
+                transmit_state = PARITY;   // issue parity bit now we've transmitted all the data bits
+            }            
+            break;
+        }
+        case PARITY:
+        {
+            if(issue_parity_bit != 0)
+            {
+                UART_SIM_LAT = 0; // currently only support space parity level
+                transmit_state = STOP;
+                break;
             }
+            
+            transmit_state = STOP;
+        }
+        case STOP:
+        {
+            UART_SIM_LAT = 1; 
+            
+            if(++stopBitsCount == numberOfStopBits)
+            {
+                stopBitsCount = 0; // reset stop bits counter
+                transmit_state = IDLE;
+                service_uart_emulation = false; // finish transmitting message       
+            }            
+            break;
         }
     }
 

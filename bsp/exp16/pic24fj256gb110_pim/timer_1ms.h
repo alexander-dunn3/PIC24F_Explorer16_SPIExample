@@ -30,6 +30,8 @@
 
 #define TIMER_TICK_INTERVAL_MICRO_SECONDS 1000
 
+extern bool service_uart_emulation;
+
 /* Type Definitions ***********************************************/
 typedef void (*TICK_HANDLER)(void);
 
@@ -38,13 +40,50 @@ typedef void (*TICK_HANDLER)(void);
 *
 * Overview: Initializes the timer.
 *
-* PreCondition: TIMER_CONFIGURATIONS - configuration to run
-*
 * Input:  None
 *
 * Output: None
 *
 ********************************************************************/
 void TIMER_SetConfiguration(void);
+
+/*********************************************************************
+* Function: void ToggleDataBits(void)
+*
+* Overview: Toggle the data bits transmission mode. Between 32, 24, 
+* 16, 9 data bits transmission
+*
+* Input:  None
+*
+* Output: None
+*
+********************************************************************/
+void ToggleDataBits(void);
+
+/*********************************************************************
+* Function: void ToggleStopBits(void)
+*
+* Overview: Toggle the stop bits transmission mode. Between 0, 1, 2 
+* bits.
+*
+* Input:  None
+*
+* Output: None
+*
+********************************************************************/
+void ToggleStopBits(void);
+
+/*********************************************************************
+* Function: void ToggleParityBit(void)
+*
+* Overview: Toggle the stop bits transmission mode. Between None, Odd, 
+* Even, Mark and Space.
+*
+* Input:  None
+*
+* Output: None
+*
+********************************************************************/
+void ToggleParityBit(void);
 
 #endif //TIMER_1MS
