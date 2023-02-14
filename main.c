@@ -71,9 +71,6 @@ void SYS_Initialize(void);
 
 APP_DATA appData;
 bool _previous_button_s6_pressed_state = false;
-bool _previous_button_s3_pressed_state = false;
-bool _previous_button_s5_pressed_state = false;
-bool _previous_button_s4_pressed_state = false;
 
 // *****************************************************************************
 // *****************************************************************************
@@ -86,8 +83,8 @@ int main(void)
     /* Call the System Initialize routine */
     SYS_Initialize();
 
-    /*Initialize bit bang timer*/
-    TIMER_SetConfiguration();
+    /* Initialise SPI */
+    SPI_Initialize();
 
     /* Infinite Loop */
     while (1) 
@@ -126,33 +123,8 @@ void Respond_To_Button_Presses(void)
     bool button_s6_pressed = BUTTON_IsPressed(BUTTON_S6);
     if(!_previous_button_s6_pressed_state && button_s6_pressed)
     {
-        // trigger uart bit bang messaging
-        service_uart_emulation = true;
-    }
-    
-    bool button_s3_pressed = BUTTON_IsPressed(BUTTON_S3);
-    if(!_previous_button_s3_pressed_state && button_s3_pressed)
-    {
-        // toggle data bits transmission
-        ToggleDataBits();
-    }
-    
-    bool button_s5_pressed = BUTTON_IsPressed(BUTTON_S5);
-    if(!_previous_button_s5_pressed_state && button_s5_pressed)
-    {
-        // toggle data bits transmission
-        ToggleStopBits();
-    }
-    
-    bool button_s4_pressed = BUTTON_IsPressed(BUTTON_S4);
-    if(!_previous_button_s4_pressed_state && button_s4_pressed)
-    {
-        // toggle data bits transmission
-        ToggleParityBit();
+        SPI_Transmit();
     }
     
     _previous_button_s6_pressed_state = button_s6_pressed;
-    _previous_button_s3_pressed_state = button_s3_pressed;
-    _previous_button_s5_pressed_state = button_s5_pressed;    
-    _previous_button_s4_pressed_state = button_s4_pressed;
 }
