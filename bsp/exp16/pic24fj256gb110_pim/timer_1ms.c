@@ -64,13 +64,12 @@ char *message;
 char *message32 = "32b "; // 4 bytes (32 bits) long
 char *message24 = "24b"; // 3 bytes (24 bits) long
 char *message16 = "16"; // 2 bytes (16 bits) long
-char *message9 = "9"; // 1 byte (9 bits) long - there will need to be some additional bit transmitted for this configuration
 int output_bit = 0;
 int length;
 int stopBitsCount;
 int numberOfStopBits;
 int numberOfDataBits;
-int issue_parity_bit = 4;// None, Odd, Even, Mark, Space
+int issue_parity_bit = 4;// None - 0, Odd - 1, Even - 2, Mark - 3, Space - 4 (default to space)
 TRANSMIT_STATE transmit_state = IDLE;
 
 /*********************************************************************
@@ -115,7 +114,7 @@ void TIMER_SetConfiguration(void)
 
 void ToggleDataBits(void)
 {
-    int remainder = ++data_bits_tx_mode % 4;
+    int remainder = ++data_bits_tx_mode % 3; // toggle data bits mode on explorer 16 S3 button press
     
     switch(remainder)
     {
@@ -132,11 +131,6 @@ void ToggleDataBits(void)
         case 2:
         {
             message = message16;
-            break;
-        }
-        case 3:
-        {
-            message = message9;
             break;
         }
     }
@@ -158,7 +152,7 @@ void ToggleDataBits(void)
 ********************************************************************/
 void ToggleStopBits(void)
 {
-    if(++numberOfStopBits % 3 == 0)
+    if(++numberOfStopBits % 3 == 0) // toggle stop bits on explorer 16 S5 button press
         numberOfStopBits = 0;
 }
 
@@ -175,7 +169,7 @@ void ToggleStopBits(void)
 ********************************************************************/
 void ToggleParityBit(void)
 {
-    if(++issue_parity_bit % 5 == 0)
+    if(++issue_parity_bit % 5 == 0) // toggle parity bit mode on explorer 16 S4 button press
         issue_parity_bit = 0;
 }
 
@@ -206,7 +200,7 @@ void __attribute__ ( ( __interrupt__ , auto_psv ) ) _T3Interrupt ( void )
         {
             if(service_uart_emulation)
             {
-                transmit_state = START;
+                transmit_state = START; // initiate send if we receive explorer 16 S6 button press
             }
             break;
         }
